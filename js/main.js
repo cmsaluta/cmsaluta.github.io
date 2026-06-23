@@ -35,4 +35,44 @@
 
   window.addEventListener("scroll", revealOnScroll);
   revealOnScroll();
+
+  const counters = document.querySelectorAll(".stat-counter");
+
+  const animateCounter = (element) => {
+    const target = Number(element.dataset.value);
+    const suffix = element.dataset.suffix || "";
+    const duration = 1500;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      element.textContent = String(Math.round(eased * target)) + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        element.textContent = String(target) + suffix;
+        element.classList.add("is-animated");
+      }
+    };
+
+    requestAnimationFrame(tick);
+  };
+
+  if (counters.length > 0) {
+    const counterObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCounter(entry.target);
+            counterObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    counters.forEach((counter) => counterObserver.observe(counter));
+  }
 })();
